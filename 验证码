@@ -1,0 +1,103 @@
+<!--以下是主要代码 -->
+<%@ page language="java" import="java.util.*" pageEncoding="UTF-8"%>
+<%
+	String path = request.getContextPath();
+	String basePath = request.getScheme() + "://"
+			+ request.getServerName() + ":" + request.getServerPort()
+			+ path + "/";
+%>
+
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+	<head>
+		<base href="<%=basePath%>">
+
+		<title>My JSP 'authen.jsp' starting page</title>
+
+	</head>
+
+	<body>
+		<%@ page
+			import="java.awt.*,java.awt.image.*,java.util.*,com.sun.image.codec.jpeg.*"%>
+		<%!//根据提供的ab产生随机的颜色变化范围 
+	Color getColor(int a, int b) {
+		int n = b - a;
+		Random rd = new Random();
+		int cr = a + rd.nextInt(n);
+		int cg = a + rd.nextInt(n);
+		int cb = a + rd.nextInt(n);
+
+		return new Color(cr, cg, cb);
+	}%>
+		<%
+			//下边三行取消客户端游览器缓存验证码的功能 
+			response.setHeader("Pragma", "No-cache");
+			response.setHeader("Cache-Control", "no-cache");
+			response.setDateHeader("Expires", 0);
+
+			int width = 60, height = 20;
+			//在内存中生成一个图像 
+			BufferedImage image = new BufferedImage(width, height,
+					BufferedImage.TYPE_INT_RGB);
+
+			Graphics g = image.getGraphics();
+
+			Random random = new Random();
+
+			g.setColor(getColor(0, 255));
+			g.fillRect(0, 0, width, height);
+
+			g.setFont(new Font("Times New Roman", Font.BOLD, 18));
+
+			g.setColor(getColor(160, 200));
+			for (int i = 0; i < 160; i++) {
+				int x = random.nextInt(width);
+				int y = random.nextInt(height);
+				int xl = random.nextInt(12);
+				int yl = random.nextInt(12);
+				g.drawLine(x, y, x + xl, y + yl);
+			}
+
+			String number = String.valueOf(1000 + random.nextInt(8999));
+			String name = request.getParameter("name");
+			session.setAttribute(name, number);
+
+			g.setColor(getColor(20, 130));
+			int x = (int) (width * 0.2);
+			int y = (int) (height * 0.8);
+			g.drawString(number, x, y);
+			g.dispose();
+
+			JPEGImageEncoder encoder = JPEGCodec.createJPEGEncoder(response
+					.getOutputStream());
+			encoder.encode(image);
+			out.close();
+		%>
+	</body>
+</html>
+
+<!--以下是测试代码 -->
+<%@ page contentType="text/html; charset=utf-8" language="java"
+	import="java.sql.*" errorPage=""%>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=gb2312" />
+		<title>无标题文档</title>
+	</head>
+
+	<body>
+		<%
+			//同样实现取消客户端缓存 
+			response.setHeader("Pragma", "No-cache");
+			response.setHeader("Cache-Control", "no-cache");
+			response.setDateHeader("Expires", 0);
+			String name = "loginCode";
+		%>
+		验证码:
+		<img src="authen.jsp?name=<%=name%>" />
+	</body>
+</html>
+
+
+
